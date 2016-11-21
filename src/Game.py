@@ -20,9 +20,9 @@ ORANGE = (232, 84, 80)
 lion = pygame.image.load("images/lion.png")
 deerA = pygame.image.load("images/deerA.png")
 deerO = pygame.image.load("images/deerO.png")
-lion = pygame.transform.scale(lion,(50,50))
-deerA = pygame.transform.scale(deerA,(50,50))
-deerO = pygame.transform.scale(deerO,(50,50))
+lion = pygame.transform.scale(lion,(40,40))
+deerA = pygame.transform.scale(deerA,(40,40))
+deerO = pygame.transform.scale(deerO,(40,40))
 
 # initialize the game engine
 pygame.init()
@@ -37,11 +37,11 @@ widthOfCell = 30
 heightOfCell = 30
 sizeOfCell = 30
 
-numberOfPreyAdults = 6
-numberOfPreyOffsprings = 3
+numberOfPreyAdults = 10
+numberOfPreyOffsprings = 5
 numberOfPredators = 4
 numberOfFoodObjects = 10
-numberOfObstacles = 0
+numberOfObstacles = 3
 
 sizeCalculation = widthOfCell * numberOfCellsInColumnsOrRows + (margin * (numberOfCellsInColumnsOrRows + 1))
 size = (sizeCalculation, sizeCalculation)
@@ -72,7 +72,7 @@ def resetGridReferences():
 
 def worldUpdate(showDisplay):
                         
-    screen.fill(BLACK)    
+    screen.fill(GREEN)    
     grid.drawGrid(WHITE)               
         
     resetGridReferences()
@@ -116,7 +116,13 @@ def worldUpdate(showDisplay):
         clock.tick(5)       
 
 worldAge = 0
-endAge = worldAge + 50000
+
+# create file for plotting graphs
+liveness_fileA = open('livenessA.txt','a')
+# liveness_fileO = open('livenessO.txt','a')
+group_file = open('group.txt','a')
+
+endAge = worldAge + 100000
 while not done and worldAge < endAge:
     # --- Main event loop      
     for event in pygame.event.get(): 
@@ -126,16 +132,24 @@ while not done and worldAge < endAge:
     grid.shouldDrawScreen = False  
     worldUpdate(grid.shouldDrawScreen)
     
-    if worldAge % 10000 == 0:
+    if worldAge % 1000 == 0:
         preyAdultKeys = PreyAdult.dictionaryOfPreyAdults.keys()
+        avg_grp_size = 0
         for preyAdultPosition in preyAdultKeys:
             singular_prey = PreyAdult.dictionaryOfPreyAdults[preyAdultPosition]                                
             print "{:d}, e: {:0.2f}, W: {:d}, L: {:d}, CP: {:d}"\
                 .format(worldAge, singular_prey.ai.epsilon, singular_prey.fed, singular_prey.eaten, singular_prey.offspringsProtected)
+            # find average group size
+            avg_grp_size += len(singular_prey.getPreyAdultPositionsInNeighborhood())
+            # write to file here
+            liveness_fileA.write(str(worldAge)+','+str(singular_prey.eaten)+'\n')
+
             singular_prey.eaten = 0
             singular_prey.fed = 0
             singular_prey.offspringsProtected = 0
-            
+        avg_grp_size /= len(PreyAdult.dictionaryOfPreyAdults.keys())
+        group_file.write(str(worldAge)+','+str(avg_grp_size)+'\n')
+
     worldAge += 1
     
 while not done:
@@ -145,5 +159,6 @@ while not done:
     
     grid.shouldDrawScreen = True    
     worldUpdate(grid.shouldDrawScreen)
-    
+
+liveness_file.close()
 pygame.quit()

@@ -68,19 +68,22 @@ class Predator(Animat):
         
         # preyAdult in neighbourhood means less reward
         if self.hasPreyAdultInNeighborhood():
-            reward += 20
+            reward += 30
         
         # preyOffspring in neighbourhood means more reward
         if self.hasPreyOffspringInNeighborhood():
-            reward += 30
+            reward += 40
 
         # reduce reward proportional to average distance between preyAdult and preyOffspring
         reward += -5 * self.getAveragePreyAdultOffspringDistance()
 
+        # add reward proportional to no of nearby predators
+        reward += 5 * self.getPredatorsInNeighborhood()
+
         if(self.isEatingPreyAdult() or self.isEatingPreyOffspring()):
             #PreyAdult re-spawns itself randomly, if it gets eaten
             self.fed += 1
-            reward = 50            
+            reward += 50            
                 
         if(self.lastState is not None):
             self.ai.learn(self.lastState,self.lastAction,reward,state)
@@ -104,6 +107,14 @@ class Predator(Animat):
             else:
                 return 0
         return tuple([stateValueForNeighbor(neighborCellCoordinates) for neighborCellCoordinates in self.getNeighborGridCoordinates()])    
+    
+    def getPredatorsInNeighborhood(self):
+        neighborGrids = self.getNeighborGridCoordinates()
+        predatorPositionsInNeighborhood = []
+        for neighborGrid in neighborGrids:
+            if(self.dictionaryOfPredators.has_key(neighborGrid)):
+                predatorPositionsInNeighborhood.append(neighborGrid)
+        return len(predatorPositionsInNeighborhood)
     
     def hasPreyAdultInNeighborhood(self):
         preyAdultInNeighborHood = self.getPreyAdultPositionsInNeighborhood()

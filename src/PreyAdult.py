@@ -12,7 +12,9 @@ class PreyAdult(Prey):
     def __init__(self,width,height,color,image,grid):
         Prey.__init__(self, width, height, color,image, grid)
         self.offspringsProtected = 0
+        self.avg_distance = self.getAveragePreyAdultOffspringDistance()
         PreyAdult.dictionaryOfPreyAdults[(self.gridX,self.gridY)] = self        
+
 
     @property
     def offspringsProtected(self):
@@ -45,7 +47,7 @@ class PreyAdult(Prey):
         reward += 20 * len(self.getPreyAdultPositionsInNeighborhood())
         
         # increase reward if around preyOffspring
-        reward += 10 * len(self.getPreyOffspringPositionsInNeighborhood())
+        # reward += 10 * len(self.getPreyOffspringPositionsInNeighborhood())
 
         if (self.gridX,self.gridY) in self.previousPositionTuples:
             reward += -20
@@ -103,6 +105,22 @@ class PreyAdult(Prey):
             if(PreyOffspring.PreyOffspring.dictionaryOfOffsprings.has_key(neighborGrid)):
                 offspringPositionsInNeighborhood.append(neighborGrid)
         return offspringPositionsInNeighborhood    
+
+    def getAveragePreyAdultOffspringDistance(self):
+        preyAdultPositionsInNeighborhood = self.getPreyAdultPositionsInNeighborhood()
+        preyOffspringPositionsInNeighborhood = self.getPreyOffspringPositionsInNeighborhood()
+        preyAdultPositionsInNeighborhood.sort()
+        preyOffspringPositionsInNeighborhood.sort()
+        totalPrey = len(preyAdultPositionsInNeighborhood) + len(preyOffspringPositionsInNeighborhood)
+        # calculate distance between adults and offspring
+        dist = 0
+        import math
+        for (p1,p2) in zip(preyAdultPositionsInNeighborhood,preyOffspringPositionsInNeighborhood):
+            dist += math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+        if totalPrey > 0:
+            return round(dist/totalPrey,1)
+        else:
+            return 0
 
 
 

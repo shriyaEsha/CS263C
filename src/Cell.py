@@ -150,7 +150,7 @@ class Cell(object):
         if(self.grid.shouldDrawScreen):
             image_rect = image.get_rect()
             image_rect.topleft = (self.x,self.y)
-            print "xy: ",self.x," ",self.y
+            # print "xy: ",self.x," ",self.y
             screen.blit(image,image_rect)
         
     def drawCellOnGrid(self,grid_x,grid_y,color,screen):

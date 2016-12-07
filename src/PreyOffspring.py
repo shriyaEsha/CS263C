@@ -34,7 +34,7 @@ class PreyOffspring(Prey):
             reward += -20
 
         # if preyAdult groups are nearby, reward increases!
-        reward += 5 * len(self.getPreyAdultPositionsInNeighborhood())
+        # reward += 5 * len(self.getPreyAdultPositionsInNeighborhood())
             
         #Check if the animat has been eaten by any of the predators        
         if(self.isBeingEatenByPredator()):

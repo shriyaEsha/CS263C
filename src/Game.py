@@ -5,6 +5,7 @@ from Obstacle import Obstacle
 from Predator import Predator
 from PreyAdult import PreyAdult
 from PreyOffspring import PreyOffspring
+import time
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -119,22 +120,33 @@ worldAge = 0
 
 # create file for plotting graphs
 liveness_fileA = open('livenessA.txt','a')
+prot = open('prot.txt','a')
+dfile = open('dfile.txt','a')
 # liveness_fileO = open('livenessO.txt','a')
 group_file = open('group.txt','a')
 
-endAge = worldAge + 100000
+endAge = worldAge + 10000
 while not done and worldAge < endAge:
     # --- Main event loop      
     for event in pygame.event.get(): 
         if event.type == pygame.QUIT: 
             done = True            
     
-    grid.shouldDrawScreen = False  
+    grid.shouldDrawScreen = True  
     worldUpdate(grid.shouldDrawScreen)
-    
+    tot_eaten = 0
+    tot_prot = 0
+    avg_dist = 0
+    avg_grp_size = 0
     if worldAge % 1000 == 0:
+        # create file for plotting graphs
+        liveness_fileA = open('livenessA.txt','a')
+        dfile = open('dfile.txt','a')
+        prot = open('prot.txt','a')
+        # liveness_fileO = open('livenessO.txt','a')
+        group_file = open('group.txt','a')
+
         preyAdultKeys = PreyAdult.dictionaryOfPreyAdults.keys()
-        avg_grp_size = 0
         for preyAdultPosition in preyAdultKeys:
             singular_prey = PreyAdult.dictionaryOfPreyAdults[preyAdultPosition]                                
             print "{:d}, e: {:0.2f}, W: {:d}, L: {:d}, CP: {:d}"\
@@ -142,15 +154,30 @@ while not done and worldAge < endAge:
             # find average group size
             avg_grp_size += len(singular_prey.getPreyAdultPositionsInNeighborhood())
             # write to file here
-            liveness_fileA.write(str(worldAge)+','+str(singular_prey.eaten)+'\n')
+            tot_eaten += (singular_prey.eaten)
+            tot_prot += (singular_prey.offspringsProtected)
+            avg_dist += singular_prey.avg_distance
 
             singular_prey.eaten = 0
             singular_prey.fed = 0
             singular_prey.offspringsProtected = 0
-        avg_grp_size /= len(PreyAdult.dictionaryOfPreyAdults.keys())
-        group_file.write(str(worldAge)+','+str(avg_grp_size)+'\n')
+        if avg_grp_size > len(PreyAdult.dictionaryOfPreyAdults.keys()):
+            avg_grp_size /= len(PreyAdult.dictionaryOfPreyAdults.keys())
+        else:
+            avg_grp_size = 1
+        avg_dist /= len(PreyAdult.dictionaryOfPreyAdults.keys())
 
+        prot.write(str(worldAge)+','+str(tot_prot)+'\n')
+        dfile.write(str(worldAge)+','+str(avg_dist)+'\n')
+        group_file.write(str(worldAge)+','+str(avg_grp_size)+'\n')
+        liveness_fileA.write(str(worldAge)+','+str(tot_eaten)+'\n')
+        liveness_fileA.close()
+        prot.close()
+        dfile.close()
+        group_file.close()
+        print 'grp: '+str(avg_grp_size)+" tot: "+str(tot_eaten)
     worldAge += 1
+    print worldAge
     
 while not done:
     for event in pygame.event.get(): 
@@ -160,5 +187,5 @@ while not done:
     grid.shouldDrawScreen = True    
     worldUpdate(grid.shouldDrawScreen)
 
-liveness_file.close()
+
 pygame.quit()
